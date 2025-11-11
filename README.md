@@ -23,7 +23,7 @@ https://yet-another-software-suite.github.io/YAGSL/yagsl/yagsl.json
 [Library here](https://github.com/Yet-Another-Software-Suite/YAGSL/)  
 [Code here](https://github.com/Yet-Another-Software-Suite/YAGSL/tree/main/yagsl/java/swervelib)  
 [WIKI](https://docs.yagsl.com)  
-[Config Generation](https://yet-another-software-suite.github.io/YAGSL/config_generator)
+[Config Generation](https://yet-another-software-suite.github.io/YAGSL/config_generator/)
 
 # Create an issue if there is any errors you find!
 
