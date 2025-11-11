@@ -14,6 +14,7 @@ jobs:
       actions: read
       pages: read
       deployments: read
+      pull-requests: write
     env:
       releaseVersion: ${{ inputs.releaseVersion }}
       workingDirectory: ${{github.workspace}}/vendordep
