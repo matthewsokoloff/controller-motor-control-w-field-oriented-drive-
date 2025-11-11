@@ -47,7 +47,7 @@ jobs:
         uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
         with:
           repo: Yet-Another-Software-Suite/vendor-json-repo
-          token: ${{ secrets.PUBLISH_VENDOR_JSON_TOKEN }}
+          token: ${{ secrets.PUBLISH_VDEP_TOKE }}
           vendordep_file: ${{ env.workingDirectory }}/build/maven/yagsl-${{inputs.releaseVersion}}.json
           pr_title: "Automatically add YAGSL version ${{inputs.releaseVersion}}"
           pr_branch: "publish_yagsl_${{inputs.releaseVersion}}"
