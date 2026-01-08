@@ -16,7 +16,7 @@ used in both TimedRobot and Command-Based Robot templates.
 Vendor URL:
 
 ```
-https://yet-another-software-suite.github.io/YAGSL/yagsl/yagsl.json
+https://yet-another-software-suite.github.io/YAGSL/yagsl.json
 ```
 
 [Javadocs here](https://yet-another-software-suite.github.io/YAGSL/javadocs/)  
