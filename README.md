@@ -1,4 +1,5 @@
-# Yet Another Generic Swerve Library (YAGSL) Example project
+# // Read controller sticks and drive motors directly from the controller.
+# // L/R sticks control motor1 and motor2; triggers control motor3 and motor4.
 
 YAGSL is intended to be an easy implementation of a generic swerve drive that should work for most
 square swerve drives. The project is documented
