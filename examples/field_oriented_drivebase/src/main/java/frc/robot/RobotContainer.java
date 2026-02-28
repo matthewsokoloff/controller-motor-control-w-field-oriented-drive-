@@ -81,8 +81,24 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
-      drivebase.setDefaultCommand(driveAngularVelocity);
+    Command driveCommand = drivebase.driveFieldOriented(() -> {
+
+  var speeds = driveAngularVelocity.get();
+
+  if (drivebase.isHeadingLockActive()) {
+
+    double currentDeg = drivebase.getHeading().getDegrees();
+    double omegaDegPerSec =
+        drivebase.calculateHeadingPID(currentDeg);
+
+    speeds.omegaRadiansPerSecond =
+        Math.toRadians(omegaDegPerSec);
+  }
+
+  return speeds;
+});
+
+drivebase.setDefaultCommand(driveCommand);
 
 
   }

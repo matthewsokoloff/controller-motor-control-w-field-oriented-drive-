@@ -33,12 +33,19 @@ import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
+import edu.wpi.first.math.controller.PIDController;
+
 public class SwerveSubsystem extends SubsystemBase
 {
   /**
    * Swerve drive object.
    */
   private final SwerveDrive swerveDrive;
+
+  private final PIDController headingPID = new PIDController(4.0, 0, 0);
+
+  private boolean headingLock = false;
+  private double targetHeadingDeg = 0;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -88,7 +95,9 @@ public class SwerveSubsystem extends SubsystemBase
                                   Constants.MAX_SPEED,
                                   new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)),
                                              Rotation2d.fromDegrees(0)));
-  }
+    headingPID.enableContinuousInput(0, 360);
+    headingPID.setTolerance(1.5);
+}
 
   @Override
   public void periodic()
@@ -100,6 +109,36 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void simulationPeriodic()
   {
+  }
+
+  private double getHeadingDegrees()
+  {
+    double deg = getHeading().getDegrees();
+    return (deg % 360 + 360) % 360;
+  }
+
+  public void turnRelative(double deltaDeg)
+  {
+    targetHeadingDeg = getHeadingDegrees() + deltaDeg;
+    targetHeadingDeg = (targetHeadingDeg % 360 + 360) % 360;
+    headingPID.reset();
+    headingLock = true;
+  }
+
+  public void snapToNearest30()
+  {
+    double current = getHeadingDegrees();
+    targetHeadingDeg = Math.round(current / 30.0) * 30.0;
+    headingPID.reset();
+    headingLock = true;
+  }
+
+  public void snapToCardinal()
+  {
+    double current = getHeadingDegrees();
+    targetHeadingDeg = (Math.abs(current - 180) < 90) ? 180 : 0;
+    headingPID.reset();
+    headingLock = true;
   }
 
   /**
@@ -153,6 +192,25 @@ public class SwerveSubsystem extends SubsystemBase
     }).finallyDo(() -> swerveDrive.drive(new Translation2d(0, 0), 0, false, false));
   }
 
+  // test
+  public boolean isHeadingLockActive()
+  {
+    return headingLock;
+  }
+
+  public double calculateHeadingPID(double currentDeg)
+  {
+    double output = headingPID.calculate(currentDeg, targetHeadingDeg);
+
+    if (headingPID.atSetpoint())
+    {
+      headingLock = false;
+      return 0;
+    }
+
+    return output;
+  }
+
 
   /**
    * Replaces the swerve module feedforward with a new SimpleMotorFeedforward object.
@@ -177,13 +235,47 @@ public class SwerveSubsystem extends SubsystemBase
   public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX)
   {
     return run(() -> {
-      // Make the robot move
-      swerveDrive.drive(SwerveMath.scaleTranslation(new Translation2d(
-                            translationX.getAsDouble() * swerveDrive.getMaximumChassisVelocity(),
-                            translationY.getAsDouble() * swerveDrive.getMaximumChassisVelocity()), 0.8),
-                        Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumChassisAngularVelocity(),
-                        true,
-                        false);
+
+    Translation2d translation = SwerveMath.scaleTranslation(
+        new Translation2d(
+            translationX.getAsDouble() * swerveDrive.getMaximumChassisVelocity(),
+            translationY.getAsDouble() * swerveDrive.getMaximumChassisVelocity()
+        ),
+        0.8
+    );
+
+    double rotationInput = Math.pow(angularRotationX.getAsDouble(), 3)
+        * swerveDrive.getMaximumChassisAngularVelocity();
+
+    double finalRotation;
+
+    if (headingLock)
+    {
+      double currentDeg = getHeadingDegrees();
+
+      double pidOutputDegPerSec =
+          headingPID.calculate(currentDeg, targetHeadingDeg);
+
+      // Convert deg/sec → rad/sec
+      finalRotation = Math.toRadians(pidOutputDegPerSec);
+
+      if (headingPID.atSetpoint())
+      {
+        headingLock = false;
+        finalRotation = 0;
+      }
+    }
+    else
+    {
+      finalRotation = rotationInput;
+    }
+
+    swerveDrive.drive(
+        translation,
+        finalRotation,
+        true,
+        false
+    );
     });
   }
 
