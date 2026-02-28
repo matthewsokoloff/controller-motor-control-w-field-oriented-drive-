@@ -133,6 +133,31 @@ public class SwerveSubsystem extends SubsystemBase
     headingLock = true;
   }
 
+  public void snapToAngle(double angleDeg)
+  {
+    targetHeadingDeg = (angleDeg % 360 + 360) % 360;
+    headingPID.reset();
+    headingLock = true;
+  }
+
+  public void snapPlus30()
+  {
+    double current = getHeadingDegrees();
+    targetHeadingDeg = Math.ceil(current / 30.0) * 30.0;
+    targetHeadingDeg = (targetHeadingDeg % 360 + 360) % 360;
+    headingPID.reset();
+    headingLock = true;
+  }
+
+  public void snapMinus30()
+  {
+    double current = getHeadingDegrees();
+    targetHeadingDeg = Math.floor(current / 30.0) * 30.0;
+    targetHeadingDeg = (targetHeadingDeg % 360 + 360) % 360;
+    headingPID.reset();
+    headingLock = true;
+  }
+
   public void snapToCardinal()
   {
     double current = getHeadingDegrees();

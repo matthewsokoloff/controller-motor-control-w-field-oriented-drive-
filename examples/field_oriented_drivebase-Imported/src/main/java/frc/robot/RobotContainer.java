@@ -93,11 +93,27 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
-    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+    Command driveCommand = drivebase.driveFieldOriented(() -> {
 
-    // new test
-    new JoystickButton(driver, XboxController.Button.kA.value)
+    var speeds = driveAngularVelocity.get();
+
+    if (drivebase.isHeadingLockActive()) {
+
+      double currentDeg = drivebase.getHeading().getDegrees();
+      double omegaDegPerSec =
+          drivebase.calculateHeadingPID(currentDeg);
+
+      speeds.omegaRadiansPerSecond =
+          Math.toRadians(omegaDegPerSec);
+    }
+
+    return speeds;
+  });
+
+  drivebase.setDefaultCommand(driveCommand);
+
+    // commented out for testing spark max subsystem || uncomment to test spark controls or swap
+    /* new JoystickButton(driver, XboxController.Button.kA.value)
     .whileTrue(new RunCommand(() -> sparkSubsystem.runMotor1(), sparkSubsystem))
     .onFalse(new InstantCommand(() -> sparkSubsystem.stopAll()));
 
@@ -111,7 +127,23 @@ public class RobotContainer
 
     new JoystickButton(driver, XboxController.Button.kY.value)
         .whileTrue(new RunCommand(() -> sparkSubsystem.runMotor4(), sparkSubsystem))
-        .onFalse(new InstantCommand(() -> sparkSubsystem.stopAll()));
+        .onFalse(new InstantCommand(() -> sparkSubsystem.stopAll())); */
+    // new test
+    driverXbox.y().onTrue(
+    new InstantCommand(() -> drivebase.snapToAngle(180))
+    );
+
+    driverXbox.a().onTrue(
+        new InstantCommand(() -> drivebase.snapToAngle(0))
+    );
+
+    driverXbox.x().onTrue(
+        new InstantCommand(() -> drivebase.snapPlus30())
+    );
+
+    driverXbox.b().onTrue(
+        new InstantCommand(() -> drivebase.snapMinus30())
+    );
   }
 
   /**
